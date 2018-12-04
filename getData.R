@@ -103,6 +103,6 @@ bigPlot <- tempYear | tempPrecip
 if (save.plot) {
     # Save it cairo pdf
     ggsave(bigPlot, filename = paste0("plots/", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), 
-        ".pdf"), device = cairo_pdf, width = 270, height = 125, units = "mm", scale = 1.5)
+        ".pdf"), device = cairo_pdf, width = 270, height = 135, units = "mm", scale = 2)
     
 }
