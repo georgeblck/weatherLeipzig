@@ -60,6 +60,22 @@ if (abs(days.outdated) > 1) {
     write.table(weatherData, file = "weatherLeipzig.csv", dec = ".", sep = ";", row.names = FALSE)
 }
 
+# Get regional data
+regionalPaths <- list.files("regionalDat", full.names = TRUE)
+regionalList <- lapply(regionalPaths, function(x){
+  temp <- read.table(x, header = TRUE, skip = 1, sep = ";", dec = ".")
+  return(temp[,-20])
+})
+names(regionalList) <- list.files("regionalDat", full.names = FALSE)
+# Make Temp Data
+regioTemp <- do.call("rbind", regionalList[grep("tm", names(regionalList))])
+regioTemp <- regioTemp[order(regioTemp$Jahr, regioTemp$Monat),]
+# Make Precip Data
+regioPrecip <- do.call("rbind", regionalList[grep("rr", names(regionalList))])
+regioPrecip <- regioPrecip[order(regioPrecip$Jahr, regioPrecip$Monat),]
+# Make Sun Data
+regioSun <- do.call("rbind", regionalList[grep("sd", names(regionalList))])
+regioSun <- regioSun[order(regioSun$Jahr, regioSun$Monat),]
 
 source("makeDailyPlot.R")
 
