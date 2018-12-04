@@ -100,9 +100,14 @@ source("makeRegioPlot.R")
 
 bigPlot <- (tempYear | tempPrecip) / dailyPlot
 bigPlot <- tempYear | tempPrecip
+bigPlot <- tempYear / tempPrecip
+bigPlot <- (tempYear / dailyPlot)|tempPrecip
+bigPlot <- tempYear + tempPrecip + plot_layout(ncol = 2, widths  = c(1.6, 1))
+
 if (save.plot) {
     # Save it cairo pdf
     ggsave(bigPlot, filename = paste0("plots/", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), 
-        ".pdf"), device = cairo_pdf, width = 270, height = 135, units = "mm", scale = 2)
+        ".pdf"), device = cairo_pdf, width = 270, height = 125, units = "mm", scale = 1.7,
+        limitsize = FALSE)
     
 }
