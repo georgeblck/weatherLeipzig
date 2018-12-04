@@ -14,7 +14,7 @@ library(Cairo)
 what.year <- 2018
 since.year <- 1973
 what.station <- "Leipzig/Halle"
-save.plot <- FALSE
+save.plot <- TRUE
 
 ###################################################### Read the data Read the last (local) data
 weatherData <- read.table("weatherLeipzig.csv", dec = ".", sep = ";", header = TRUE, 
@@ -67,13 +67,7 @@ bigPlot <- dailyPlot
 
 if (save.plot) {
     # Save it cairo pdf
-    ggsave(bigPlot, filename = paste0("plots/", gsub("[^[:alnum:]=\\.]", 
-        "", lubridate::now()), ".pdf"), device = cairo_pdf, width = 270, height = 125, 
-        units = "mm", scale = 1.5)
+    ggsave(bigPlot, filename = paste0("plots/", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), 
+        ".pdf"), device = cairo_pdf, width = 270, height = 135, units = "mm", scale = 1.5)
     
 }
-
-# Abspeichern
-ggsave(paste0("plots/", what.year, "_", lubridate::now(), ".pdf"), width = 173.2, 
-       height = 100, units = "mm", scale = 3, limitsize = FALSE)
-
