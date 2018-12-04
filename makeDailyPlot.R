@@ -108,7 +108,7 @@ dailyPlot <- dailyPlot + geom_vline(xintercept = 31, colour = "wheat4", linetype
     linetype = 3, size = 0.5) + geom_vline(xintercept = 334, colour = "wheat4", linetype = 3, 
     size = 0.5) + geom_vline(xintercept = 365, colour = "wheat4", linetype = 3, size = 0.5)
 
-ylim.ticks <- seq(ylim.plot[1], ylim.plot[2], by = 5)
+ylim.ticks <- seq(ylim.plot[1], ylim.plot[2], by = 10)
 a <- dgr_fmt(ylim.ticks)
 
 # Draw the x-axis month labels

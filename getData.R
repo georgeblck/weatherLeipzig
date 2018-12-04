@@ -9,6 +9,9 @@ library(lubridate)
 library(dplyr)
 library(tidyr)
 library(Cairo)
+library(reshape2)
+library(ggthemes)
+library(patchwork)
 
 # Pre-Init values
 what.year <- 2018
@@ -76,10 +79,26 @@ regioPrecip <- regioPrecip[order(regioPrecip$Jahr, regioPrecip$Monat),]
 # Make Sun Data
 regioSun <- do.call("rbind", regionalList[grep("sd", names(regionalList))])
 regioSun <- regioSun[order(regioSun$Jahr, regioSun$Monat),]
+regio1 <- melt(regioTemp, id=c("Jahr","Monat"),factorsAsStrings = FALSE,
+               value.name = "AvgTemp", variable.name = "Bundesland") 
+regio2 <- melt(regioSun, id=c("Jahr","Monat"),factorsAsStrings = FALSE,
+               value.name = "SunDuration", variable.name = "Bundesland") 
+regio3 <- melt(regioPrecip, id=c("Jahr","Monat"),factorsAsStrings = FALSE,
+               value.name = "PrecipMM", variable.name = "Bundesland") 
+regioAll1 <- merge(regio1, regio3, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, all = TRUE)
+regioAll <- merge(regioAll1, regio2, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, all = TRUE)
+regioAll$Bundesland <- as.character(regioAll$Bundesland)
+regioAll <- regioAll[order(regioAll$Jahr, regioAll$Monat),]
+rm(regio1, regio2, regio3, regioAll1, regioTemp, regioSun, regioPrecip,regionalList, regionalPaths)
+
+
+
+
 
 source("makeDailyPlot.R")
+source("makeRegioPlot.R")
 
-bigPlot <- dailyPlot
+bigPlot <- (tempYear | tempPrecip) / dailyPlot
 
 if (save.plot) {
     # Save it cairo pdf
