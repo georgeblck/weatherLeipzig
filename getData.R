@@ -17,7 +17,7 @@ library(patchwork)
 what.year <- 2018
 since.year <- 1973
 what.station <- "Leipzig/Halle"
-save.plot <- TRUE
+save.plot <- FALSE
 
 ###################################################### Read the data Read the last (local) data
 weatherData <- read.table("weatherLeipzig.csv", dec = ".", sep = ";", header = TRUE, 
