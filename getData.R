@@ -17,7 +17,7 @@ library(patchwork)
 what.year <- 2018
 since.year <- 1973
 what.station <- "Leipzig/Halle"
-save.plot <- FALSE
+save.plot <- TRUE
 
 ###################################################### Read the data Read the last (local) data
 weatherData <- read.table("weatherLeipzig.csv", dec = ".", sep = ";", header = TRUE, 
@@ -103,7 +103,7 @@ bigPlot <- tempYear | tempPrecip
 bigPlot <- tempYear / tempPrecip
 bigPlot <- (tempYear / dailyPlot)|tempPrecip
 bigPlot <- tempYear + tempPrecip + plot_layout(ncol = 2, widths  = c(1.6, 1))
-
+print(bigPlot)
 if (save.plot) {
     # Save it cairo pdf
     ggsave(bigPlot, filename = paste0("plots/", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), 
