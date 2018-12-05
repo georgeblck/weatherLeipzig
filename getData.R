@@ -65,49 +65,54 @@ if (abs(days.outdated) > 1) {
 
 # Get regional data
 regionalPaths <- list.files("regionalDat", full.names = TRUE)
-regionalList <- lapply(regionalPaths, function(x){
-  temp <- read.table(x, header = TRUE, skip = 1, sep = ";", dec = ".")
-  return(temp[,-20])
+regionalList <- lapply(regionalPaths, function(x) {
+    temp <- read.table(x, header = TRUE, skip = 1, sep = ";", dec = ".")
+    return(temp[, -20])
 })
 names(regionalList) <- list.files("regionalDat", full.names = FALSE)
 # Make Temp Data
 regioTemp <- do.call("rbind", regionalList[grep("tm", names(regionalList))])
-regioTemp <- regioTemp[order(regioTemp$Jahr, regioTemp$Monat),]
+regioTemp <- regioTemp[order(regioTemp$Jahr, regioTemp$Monat), ]
 # Make Precip Data
 regioPrecip <- do.call("rbind", regionalList[grep("rr", names(regionalList))])
-regioPrecip <- regioPrecip[order(regioPrecip$Jahr, regioPrecip$Monat),]
+regioPrecip <- regioPrecip[order(regioPrecip$Jahr, regioPrecip$Monat), ]
 # Make Sun Data
 regioSun <- do.call("rbind", regionalList[grep("sd", names(regionalList))])
-regioSun <- regioSun[order(regioSun$Jahr, regioSun$Monat),]
-regio1 <- melt(regioTemp, id=c("Jahr","Monat"),factorsAsStrings = FALSE,
-               value.name = "AvgTemp", variable.name = "Bundesland") 
-regio2 <- melt(regioSun, id=c("Jahr","Monat"),factorsAsStrings = FALSE,
-               value.name = "SunDuration", variable.name = "Bundesland") 
-regio3 <- melt(regioPrecip, id=c("Jahr","Monat"),factorsAsStrings = FALSE,
-               value.name = "PrecipMM", variable.name = "Bundesland") 
-regioAll1 <- merge(regio1, regio3, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, all = TRUE)
-regioAll <- merge(regioAll1, regio2, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, all = TRUE)
+regioSun <- regioSun[order(regioSun$Jahr, regioSun$Monat), ]
+regio1 <- melt(regioTemp, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = "AvgTemp", 
+    variable.name = "Bundesland")
+regio2 <- melt(regioSun, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = "SunDuration", 
+    variable.name = "Bundesland")
+regio3 <- melt(regioPrecip, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = "PrecipMM", 
+    variable.name = "Bundesland")
+regioAll1 <- merge(regio1, regio3, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, 
+    all = TRUE)
+regioAll <- merge(regioAll1, regio2, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, 
+    all = TRUE)
 regioAll$Bundesland <- as.character(regioAll$Bundesland)
-regioAll <- regioAll[order(regioAll$Jahr, regioAll$Monat),]
-rm(regio1, regio2, regio3, regioAll1, regioTemp, regioSun, regioPrecip,regionalList, regionalPaths)
+regioAll <- regioAll[order(regioAll$Jahr, regioAll$Monat), ]
+rm(regio1, regio2, regio3, regioAll1, regioTemp, regioSun, regioPrecip, regionalList, 
+    regionalPaths)
 
-
-
-
-
+# Make Plots
 source("makeDailyPlot.R")
 source("makeRegioPlot.R")
 
-bigPlot <- (tempYear | tempPrecip) / dailyPlot
+# Combine plots - patchwork style
+bigPlot <- (tempYear | tempPrecip)/dailyPlot
 bigPlot <- tempYear | tempPrecip
-bigPlot <- tempYear / tempPrecip
-bigPlot <- (tempYear / dailyPlot)|tempPrecip
-bigPlot <- tempYear + tempPrecip + plot_layout(ncol = 2, widths  = c(1.6, 1))
+bigPlot <- tempYear/tempPrecip
+bigPlot <- (tempYear/dailyPlot) | tempPrecip
+bigPlot <- tempYear + tempPrecip + plot_layout(ncol = 2, widths = c(1.6, 1))
 print(bigPlot)
+
+# Save Plot
 if (save.plot) {
     # Save it cairo pdf
-    ggsave(bigPlot, filename = paste0("plots/", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), 
-        ".pdf"), device = cairo_pdf, width = 270, height = 125, units = "mm", scale = 1.7,
+    ggsave(bigPlot, filename = paste0("plots/538_", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), 
+        ".pdf"), device = cairo_pdf, width = 270, height = 125, units = "mm", scale = 1.7, 
         limitsize = FALSE)
-    
+    ggsave(dailyPlot, filename = paste0("plots/daily_", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), 
+        ".png"), width = 270, height = 135, units = "mm", scale = 1.7, 
+        limitsize = FALSE)
 }
