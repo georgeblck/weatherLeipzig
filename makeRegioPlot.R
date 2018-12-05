@@ -40,23 +40,23 @@ print(sunYear)
 
 
 # Plot precip against Temp
-tempPrecip <- ggplot(data = saxonyMeans, aes(x = Temp, y = Precip, color = factor(yearRegul), 
-    alpha = factor(yearRegul))) + geom_segment(aes(x = mean(saxonyMeans$Temp[saxonyMeans$yearRegul == 
-    0]), xend = mean(saxonyMeans$Temp[saxonyMeans$yearRegul == 0]), y = 350, yend = 980), 
+tempPrecip <- ggplot(data = saxonyMeans, aes(y = Temp, x = Precip, color = factor(yearRegul), 
+    alpha = factor(yearRegul))) + geom_segment(aes(y = mean(saxonyMeans$Temp[saxonyMeans$yearRegul == 
+    0]), yend = mean(saxonyMeans$Temp[saxonyMeans$yearRegul == 0]), x = 350, xend = 980), 
     inherit.aes = FALSE, linetype = "dashed", alpha = 0.5, col = "black", data = data.frame()) + 
-    geom_segment(aes(x = 6.5, xend = 11.2, y = mean(saxonyMeans$Precip[saxonyMeans$yearRegul == 
-        0]), yend = mean(saxonyMeans$Precip[saxonyMeans$yearRegul == 0])), inherit.aes = FALSE, 
-        linetype = "dashed", alpha = 0.5, col = "black", data = data.frame()) + geom_point(size = 3.5) + 
-    geom_rangeframe(col = "black", sides = "br") + theme_tufte() + xlab("Durchschnittstemperatur (°C)") + 
-    ylab("Niederschlag (mm)") + scale_color_manual(values = c("blue", "black", 
+    geom_segment(aes(y = 6.5, yend = 11.2, x = mean(saxonyMeans$Precip[saxonyMeans$yearRegul == 
+        0]), xend = mean(saxonyMeans$Precip[saxonyMeans$yearRegul == 0])), inherit.aes = FALSE, 
+        linetype = "dashed", alpha = 0.5, col = "black", data = data.frame()) + geom_point(size = 3) + 
+    geom_rangeframe(col = "black", sides = "br") + theme_tufte() + ylab("Durchschnittstemperatur (°C)") + 
+    xlab("Niederschlag (mm)") + scale_color_manual(values = c("blue", "black", 
     "red"), breaks = c(0, 1), name = "Jahr", labels = c("1881-1999", "2000-2017")) + 
-    theme_tufte(base_size = 15) + scale_x_continuous(limits = c(6.5, 11.5)) + scale_y_continuous(limits = c(350, 
-    1020), breaks = c(400, 600, 800, 1000),position = "right") + theme(legend.position = c(0, 0), legend.justification = c(0, 
+    theme_tufte(base_size = 15) + scale_y_continuous(limits = c(6.5, 11.5),position = "right") + scale_x_continuous(limits = c(350, 
+    1020), breaks = c(400, 600, 800, 1000)) + theme(legend.position = c(0, 0), legend.justification = c(0, 
     0), legend.background = element_rect(fill = "grey90", size = 0.5, linetype = "solid", 
     colour = "black"), legend.title = element_text(size = 16, face = "bold", hjust = 0.5)) + 
-    annotate("text", x = 7, y = mean(saxonyMeans$Precip[saxonyMeans$yearRegul == 
-        0]) + 7, label = "Durchschnittswerte", size = 3) + annotate("text", x = saxonyMeans$Temp[saxonyMeans$Jahr == 
-    2018], y = saxonyMeans$Precip[saxonyMeans$Jahr == 2018] + 11, label = "bold(2018)", 
-    parse = TRUE, size = 4) + scale_alpha_manual(values = c(0.4, 0.9, 0.9), guide = FALSE) + 
+    annotate("text", y = 7, x = mean(saxonyMeans$Precip[saxonyMeans$yearRegul == 
+        0]) + 7, label = "Durchschnittswerte", size = 3, angle = 90) + 
+  #annotate("text", y = saxonyMeans$Temp[saxonyMeans$Jahr == 2018]+0.1, x = saxonyMeans$Precip[saxonyMeans$Jahr == 2018] , label = "bold(2018)", parse = TRUE, size = 4) + 
+  scale_alpha_manual(values = c(0.4, 0.9, 0.9), guide = FALSE) + 
     guides(colour = guide_legend(override.aes = list(alpha = c(0.4, 0.9))))+theme(text=element_text(size=16,  family="sans-serif"))
 

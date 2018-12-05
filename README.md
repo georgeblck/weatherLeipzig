@@ -4,6 +4,7 @@
 
 Inspiration: https://rpubs.com/bradleyboehmke/weather_graphic
 
+https://fivethirtyeight.com/features/why-californias-wildfires-are-so-destructive-in-5-charts/
 
 ## Data Sources
 
