@@ -56,9 +56,7 @@ tempPrecip <- ggplot(data = saxonyMeans, aes(y = Temp, x = Precip, color = facto
     0), legend.background = element_rect(fill = "grey90", size = 0.5, linetype = "solid", 
     colour = "black"), legend.title = element_text(size = 16, face = "bold", hjust = 0.5)) + 
     annotate("text", y = 7, x = mean(saxonyMeans$Precip[saxonyMeans$yearRegul == 
-        0]) + 7, label = "Durchschnittswerte", size = 3, angle = 90) + # annotate('text', y = saxonyMeans$Temp[saxonyMeans$Jahr == 2018]+0.1, x =
-# saxonyMeans$Precip[saxonyMeans$Jahr == 2018] , label = 'bold(2018)', parse =
-# TRUE, size = 4) +
-scale_alpha_manual(values = c(0.4, 0.9, 0.9), guide = FALSE) + guides(colour = guide_legend(override.aes = list(alpha = c(0.4, 
+        0]) + 7, label = "Durchschnittswerte", size = 3, angle = 90) + scale_alpha_manual(values = c(0.4, 
+    0.9, 0.9), guide = FALSE) + guides(colour = guide_legend(override.aes = list(alpha = c(0.4, 
     0.9)))) + theme(text = element_text(size = 16, family = "sans-serif"))
 
