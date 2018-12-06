@@ -96,6 +96,7 @@ rm(regio1, regio2, regio3, regioAll1, regioTemp, regioSun, regioPrecip, regional
 
 # Make Plots
 source("makeDailyPlot.R")
+source("checkLeipzig.R")
 source("makeRegioPlot.R")
 
 # Combine plots - patchwork style

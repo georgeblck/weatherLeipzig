@@ -1,12 +1,13 @@
 leipzigDat <- subWeather
+lastDay <- leipzigDat[nrow(leipzigDat), "yearDay"]
 
-# Make Averages of all years for Months 1-11
-leipzigMeanTemp1_11 <- tapply(leipzigDat[leipzigDat$yearDay %in% 1:337, "Temp"], 
-    leipzigDat[leipzigDat$yearDay %in% 1:337, "Year"], FUN = mean)
-leipzigMeanPrecip1_11 <- tapply(leipzigDat[leipzigDat$yearDay %in% 1:337, "PrecipinMM"], 
-    leipzigDat[leipzigDat$yearDay %in% 1:337, "Year"], FUN = sum)
-leipzigMeanSunDur1_11 <- tapply(leipzigDat[leipzigDat$yearDay %in% 1:337, "SunHours"], 
-    leipzigDat[leipzigDat$yearDay %in% 1:337, "Year"], FUN = sum)
+# Make Averages of all years for the days of 2018
+leipzigMeanTemp1_11 <- tapply(leipzigDat[leipzigDat$yearDay %in% 1:lastDay, "Temp"], 
+    leipzigDat[leipzigDat$yearDay %in% 1:lastDay, "Year"], FUN = mean)
+leipzigMeanPrecip1_11 <- tapply(leipzigDat[leipzigDat$yearDay %in% 1:lastDay, "PrecipinMM"], 
+    leipzigDat[leipzigDat$yearDay %in% 1:lastDay, "Year"], FUN = sum)
+leipzigMeanSunDur1_11 <- tapply(leipzigDat[leipzigDat$yearDay %in% 1:lastDay, "SunHours"], 
+    leipzigDat[leipzigDat$yearDay %in% 1:lastDay, "Year"], FUN = sum)
 leipzigMeans <- data.frame(Jahr = as.numeric(names(leipzigMeanPrecip1_11)), Temp = leipzigMeanTemp1_11, 
     Precip = leipzigMeanPrecip1_11, sunHours = leipzigMeanSunDur1_11)
 leipzigMeans$yearRegul <- leipzigMeans$Jahr >= 2000
@@ -32,11 +33,12 @@ tempYear <- ggplot(data = leipzigMeans, aes(x = Jahr, y = Temp)) + geom_segment(
     family = "sans-serif"))
 
 # Plot Sunhour data
-ggplot(data = na.omit(leipzigMeans), aes(x = Jahr, y = sunHours/365)) + geom_line(alpha = 0.7, 
-    col = "darkorange", size = 1) + xlab("Jahr") + ylab("Sonnenstunden") + geom_point(size = 3, 
-    alpha = 0.7, col = "darkorange") + theme_tufte(base_size = 15) + theme(legend.position = "none") + 
-    scale_x_continuous(limits = c(1973, 2017), breaks = c(1973, seq(1980, 2018, by = 10), 
-        2017)) + geom_rangeframe(col = "black") + geom_smooth(se = FALSE)
+sunYear <- ggplot(data = na.omit(leipzigMeans), aes(x = Jahr, y = sunHours/lastDay)) + 
+    geom_line(alpha = 0.7, col = "darkorange", size = 1) + xlab("Jahr") + ylab("Sonnenstunden pro Tag") + 
+    geom_point(size = 3, alpha = 0.7, col = "darkorange") + theme_tufte(base_size = 15) + 
+    theme(legend.position = "none") + scale_x_continuous(limits = c(1973, 2017), 
+    breaks = c(1973, seq(1980, 2018, by = 10), 2017)) + geom_rangeframe(col = "black") + 
+    geom_smooth(se = FALSE)
 print(sunYear)
 
 
@@ -59,4 +61,15 @@ tempPrecip <- ggplot(data = leipzigMeans, aes(y = Temp, x = Precip, color = fact
     0.9, 0.9), guide = FALSE) + guides(colour = guide_legend(override.aes = list(alpha = c(0.4, 
     0.9)))) + theme(text = element_text(size = 16, family = "sans-serif"))
 
-tempYear + tempPrecip + plot_layout(ncol = 2, widths = c(1.6, 1))
+bigPlot2 <- tempYear + tempPrecip + plot_layout(ncol = 2, widths = c(1.6, 1))
+
+# Save Plot
+if (save.plot) {
+    # Save it cairo pdf
+    ggsave(bigPlot2, filename = paste0("plots/538_leipzig_", gsub("[^[:alnum:]=\\.]", 
+        "", lubridate::now()), ".pdf"), device = cairo_pdf, width = 270, height = 125, 
+        units = "mm", scale = 1.7, limitsize = FALSE)
+    ggsave(bigPlot2, filename = paste0("plots/538_leipzig_", gsub("[^[:alnum:]=\\.]", 
+        "", lubridate::now()), ".png"), width = 270, height = 125, 
+        units = "mm", scale = 1.7, limitsize = FALSE)
+}

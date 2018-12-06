@@ -12,9 +12,13 @@ Result:
 
 Inspiration: https://fivethirtyeight.com/features/why-californias-wildfires-are-so-destructive-in-5-charts/
 
-Result: (The red dot is 2018)
+The German Weather Service has monthly data of Regional Averages for Saxony that go back to the year 1881. I calculated yearly averages with these monthly values for all years till 2018. December is always excluded as it has not happened yet.
 
 ![](plots/20181205201126.png)
+
+Daily Averages for **Leipzig** are available only since 1973. If we use this shorter but more precise data set the graphs look like this
+
+![](plots/538_leipzig_20181206152716.png)
 
 ## Data Sources
 
