@@ -63,36 +63,8 @@ if (abs(days.outdated) > 1) {
     write.table(weatherData, file = "weatherLeipzig.csv", dec = ".", sep = ";", row.names = FALSE)
 }
 
-# Get regional data
-regionalPaths <- list.files("regionalDat", full.names = TRUE)
-regionalList <- lapply(regionalPaths, function(x) {
-    temp <- read.table(x, header = TRUE, skip = 1, sep = ";", dec = ".")
-    return(temp[, -20])
-})
-names(regionalList) <- list.files("regionalDat", full.names = FALSE)
-# Make Temp Data
-regioTemp <- do.call("rbind", regionalList[grep("tm", names(regionalList))])
-regioTemp <- regioTemp[order(regioTemp$Jahr, regioTemp$Monat), ]
-# Make Precip Data
-regioPrecip <- do.call("rbind", regionalList[grep("rr", names(regionalList))])
-regioPrecip <- regioPrecip[order(regioPrecip$Jahr, regioPrecip$Monat), ]
-# Make Sun Data
-regioSun <- do.call("rbind", regionalList[grep("sd", names(regionalList))])
-regioSun <- regioSun[order(regioSun$Jahr, regioSun$Monat), ]
-regio1 <- melt(regioTemp, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = "AvgTemp", 
-    variable.name = "Bundesland")
-regio2 <- melt(regioSun, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = "SunDuration", 
-    variable.name = "Bundesland")
-regio3 <- melt(regioPrecip, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = "PrecipMM", 
-    variable.name = "Bundesland")
-regioAll1 <- merge(regio1, regio3, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, 
-    all = TRUE)
-regioAll <- merge(regioAll1, regio2, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, 
-    all = TRUE)
-regioAll$Bundesland <- as.character(regioAll$Bundesland)
-regioAll <- regioAll[order(regioAll$Jahr, regioAll$Monat), ]
-rm(regio1, regio2, regio3, regioAll1, regioTemp, regioSun, regioPrecip, regionalList, 
-    regionalPaths)
+regioAll <- read.table("https://raw.githubusercontent.com/georgeblck/weatherLeipzig/master/saxonyClimate.csv",
+                       header = TRUE, dec =".", sep =";")
 
 # Make Plots
 source("makeDailyPlot.R")
