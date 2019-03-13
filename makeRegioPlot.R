@@ -31,12 +31,11 @@ tempYear <- ggplot(data = saxonyMeans, aes(x = Jahr, y = Temp)) + geom_segment(a
     11.5)) + theme(text = element_text(size = 16, family = "sans-serif"))
 
 # Plot Sunhour data
-sunYear <- ggplot(data = na.omit(saxonyMeans), aes(x = Jahr, y = sunHours/365)) + 
+sunYear <- ggplot(data = na.omit(saxonyMeans), aes(x = Jahr, y = sunHours)) + geom_rangeframe(col="black")+
     geom_line(alpha = 0.7, col = "darkorange", size = 1) + xlab("Jahr") + ylab("Sonnenstunden") + 
     geom_point(size = 3, alpha = 0.7, col = "darkorange") + theme_tufte(base_size = 15) + 
     theme(legend.position = "none") + scale_x_continuous(limits = c(1951, 2018), 
-    breaks = c(1951, seq(1970, 2018, by = 20), 2018)) + geom_rangeframe(col = "black") + 
-    geom_smooth(se = FALSE)
+    breaks = c(1951, seq(1970, 2018, by = 20), 2018)) 
 print(sunYear)
 
 
