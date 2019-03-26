@@ -2,53 +2,46 @@
 rm(list = ls())
 
 # load Packages
-library(rdwd)
-library(ggplot2)
-library(formatR)
-library(lubridate)
-library(dplyr)
-library(tidyr)
-library(Cairo)
 library(reshape2)
-library(ggthemes)
-library(patchwork)
 library(stringr)
 
-tmString <- "ftp://ftp-cdc.dwd.de/pub/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_"
-rrString <- "ftp://ftp-cdc.dwd.de/pub/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_"
-sunString <- "ftp://ftp-cdc.dwd.de/pub/CDC/regional_averages_DE/monthly/sunshine_duration/regional_averages_sd_"
-allStrings <- c(tmString, rrString, sunString)
+#### Load data ####
+
+# Get the URLs of the Regional Monthly Averages
+tmURL <- "ftp://ftp-cdc.dwd.de/pub/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_"
+rrURL <- "ftp://ftp-cdc.dwd.de/pub/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_"
+sunURL <- "ftp://ftp-cdc.dwd.de/pub/CDC/regional_averages_DE/monthly/sunshine_duration/regional_averages_sd_"
+allURL <- c(tmURL, rrURL, sunURL)
+# Append the month numbers to ftp-URLs
 monthStrings <- str_pad(1:12, 2, pad = "0")
-getStrings <- paste0(as.vector(outer(allStrings, monthStrings, paste0)), ".txt")
+getURLs <- paste0(as.vector(outer(allURL, monthStrings, paste0)), ".txt")
 
-
-regionalList <- lapply(getStrings, function(x) {
-  temp <- read.table(x, header = TRUE, skip = 1, sep = ";", dec = ".")
-  return(temp[, -20])
+# Read tables from urls
+listData <- lapply(getURLs, function(x) {
+    temp <- read.table(x, header = TRUE, skip = 1, sep = ";", dec = ".")
+    return(temp[, -20])
 })
 
-str(regionalList)
+# Rename the list (without the URL-part)
+names(listData) <- str_extract(getURLs, "[^/]+$")
 
-names(regionalList) <- str_extract(getStrings, "[^/]+$")
-# Make Temp Data
-regioTemp <- do.call("rbind", regionalList[grep("tm", names(regionalList))])
-regioTemp <- regioTemp[order(regioTemp$Jahr, regioTemp$Monat), ]
-# Make Precip Data
-regioPrecip <- do.call("rbind", regionalList[grep("rr", names(regionalList))])
-regioPrecip <- regioPrecip[order(regioPrecip$Jahr, regioPrecip$Monat), ]
-# Make Sun Data
-regioSun <- do.call("rbind", regionalList[grep("sd", names(regionalList))])
-regioSun <- regioSun[order(regioSun$Jahr, regioSun$Monat), ]
-regio1 <- melt(regioTemp, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = "AvgTemp", 
-               variable.name = "Bundesland")
-regio2 <- melt(regioSun, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = "SunDuration", 
-               variable.name = "Bundesland")
-regio3 <- melt(regioPrecip, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = "PrecipMM", 
-               variable.name = "Bundesland")
-regioAll1 <- merge(regio1, regio3, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, all = TRUE)
-regioAll <- merge(regioAll1, regio2, by = c("Jahr", "Monat", "Bundesland"), sort = FALSE, all = TRUE)
-regioAll$Bundesland <- as.character(regioAll$Bundesland)
-regioAll <- regioAll[order(regioAll$Jahr, regioAll$Monat), ]
-rm(regio1, regio2, regio3, regioAll1, regioTemp, regioSun, regioPrecip, regionalList)
+#### Collapse the list into respective Variable-DF ####
+varTypes <- c("tm", "rr", "sd")
+# Make a Data-Frame for each Variable Type
+dfData <- lapply(varTypes, function(x) {
+    temp <- do.call("rbind", listData[grep(x, names(listData))])
+    temp <- melt(temp, id = c("Jahr", "Monat"), factorsAsStrings = FALSE, value.name = x, variable.name = "Bundesland")
+    return(temp)
+})
+# Merge the list of data frames
+dfData <- Reduce(function(...) merge(..., all = TRUE, by = c("Jahr", "Monat", "Bundesland")), dfData)
+dfData$Bundesland <- as.character(dfData$Bundesland)
+# Sort Data
+dfData <- dfData[order(dfData$Jahr, dfData$Monat), ]
+colnames(dfData) <- c("Jahr", "Monat", "Bundesland", "Temperatur", "Niederschlag", "Sonnendauer")
 
-write.table(regioAll, file = "saxonyClimate.csv", dec = ".", sep = ";", row.names = FALSE)
+# Daten abspeichern
+write.table(dfData, file = "regionalAverages.csv", dec = ".", sep = ";", row.names = FALSE)
+
+# Clean-Up
+rm(listData, allURL, getURLs, monthStrings, rrURL, sunURL, tmURL, varTypes)
