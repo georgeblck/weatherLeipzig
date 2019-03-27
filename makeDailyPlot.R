@@ -1,127 +1,59 @@
-# function to turn y-axis labels into degree formatted values
-dgr_fmt <- function(x, ...) {
-    parse(text = paste(x, "^o", sep = ""))
-}
+rm(list = ls())
 
-# Subset the Temp-Data by Year (1973) & by Variable
-subWeather <- weatherData[weatherData$Year >= since.year, c("Month", "Day", "Year", 
-    "YDay", "AVGTemp", "MaxTemp2m", "MinTemp2m", "SonnenscheinStunden", "NiederschlagMM")]
-colnames(subWeather) <- c("Month", "Day", "Year", "yearDay", "Temp", "MaxTemp", "MinTemp", 
-    "SunHours", "PrecipinMM")
+# load packages
+library(lubridate)
+library(tidyverse)
+library(ggthemes)
+library(formatR)
 
-# Get y-Axis Limits
-ylim.plot <- c(floor(min(subWeather$MinTemp)/5) * 5, ceiling(max(subWeather$MaxTemp)/5) * 
-    5)
+# Filter festlegen
+jahr <- 2019
+lastday <- ifelse((year(today()) - jahr) != 0, yday(ymd(paste0(jahr, "1231"))), yday(today()) - 5)
+beginjahr <- 1973
 
-# Make Indices for the chosen year
-notYearIndex <- !is.na(subWeather$Temp) & (subWeather$Year != what.year)
-YearIndex <- !is.na(subWeather$Temp) & (subWeather$Year == what.year)
+# Daten einlesen
+dailyData <- read.table("data/dailyData.csv", header = TRUE, dec = ".", sep = ";") %>% select(c("Date", "YDay", 
+    "Year", "AVGTemp", "NiederschlagMM"))
+colnames(dailyData)[ 3:5] <- c("Jahr", "Temperatur", "Niederschlag")
 
-# Get the daily records per year-day
-recordHigh <- tapply(subWeather[notYearIndex, "MaxTemp"], subWeather[notYearIndex, 
-    "yearDay"], FUN = max)
-recordLow <- tapply(subWeather[notYearIndex, "MinTemp"], subWeather[notYearIndex, 
-    "yearDay"], FUN = min)
-recordHighLowPast <- data.frame(high = recordHigh, low = recordLow, yearDay = 1:366)
+# Daten filtern und aggregieren
+weatherDat <- dailyData %>% filter(Jahr <= jahr) %>% filter(YDay <= lastday) %>% group_by(Jahr) %>% summarise_at(c("Temperatur", 
+    "Niederschlag"), list(mw = mean, summe = sum), na.rm = TRUE) %>% ungroup() %>% mutate(typeYear = (Jahr >= 
+    2000) + (Jahr == jahr)) %>% filter(Jahr >= beginjahr)
 
-####### Get the average low & highs per year-day
-avgHigh <- tapply(subWeather[notYearIndex, "MaxTemp"], subWeather[notYearIndex, "yearDay"], 
-    FUN = mean)
-avgLow <- tapply(subWeather[notYearIndex, "MinTemp"], subWeather[notYearIndex, "yearDay"], 
-    FUN = mean)
-avgHighLowPast <- data.frame(high = avgHigh, low = avgLow, yearDay = 1:366)
+# Make the empty plot with the geom_segments Get the borders and round down or up
+tempRange <- weatherDat %>% summarise_at(c("Temperatur_mw"), list(min = min, max = max)) %>% mutate(min = floor(min), 
+    max = ceiling(max)) %>% unlist()
+tempTicks <- tempRange[1]:tempRange[2]
+tempsegDat <- data.frame(x = rep(beginjahr, length(tempTicks)), xend = rep(jahr + 0.5, length(tempTicks)), 
+    y = tempTicks, yend = tempTicks)
+ggplot(data = weatherDat, aes(x = Jahr, y = Temperatur_mw)) + geom_segment(data = tempsegDat, aes(x = x, 
+    y = y, xend = xend, yend = yend), inherit.aes = FALSE, linetype = "dashed", alpha = 0.3, col = "black") + 
+    geom_rangeframe(col = "black") + geom_line(alpha = 0.7, col = "red", size = 0.7) + geom_point(size = 1.5, 
+    alpha = 0.7, col = "red") + xlab("Jahr") + ylab("Durchschnittstemperatur (°C)") + theme_tufte(base_size = 11) + 
+    theme(legend.position = "none") + scale_x_continuous(breaks = c(beginjahr, seq(1980, jahr, by = 10), 
+    jahr)) + scale_y_continuous(limits = c(tempRange[1], tempRange[2])) + theme(text = element_text(size = 11, 
+    family = "sans-serif"))
 
-####### Get the present high lows
-highLowPresent <- subWeather[YearIndex, c("yearDay", "MaxTemp", "MinTemp")]
-colnames(highLowPresent) <- c("yearDay", "high", "low")
+#### Plot Precip vs Temp ####
 
-####### Get the normal range (without the year)
-tempSummary <- tapply(subWeather[notYearIndex, "Temp"], subWeather[notYearIndex, 
-    "yearDay"], FUN = function(x) {
-    upper <- max(x, na.rm = TRUE)
-    lower <- min(x, na.rm = TRUE)
-    avg <- mean(x, na.rm = TRUE)
-    se <- sd(x, na.rm = TRUE)/sqrt(length(x))  #obacht bei NAs
-    avg_upper <- avg + (2.101 * se)
-    avg_lower = avg - (2.101 * se)
-    return(c(upper, lower, avg, se, avg_upper, avg_lower))
-})
-pastTempRange <- as.data.frame(do.call("rbind", tempSummary))
-pastTempRange$yearDay <- as.numeric(names(tempSummary))
-colnames(pastTempRange) <- c("upper", "lower", "avg", "se", "avg_upper", "avg_lower", 
-    "yearDay")
+# Round Precip to nearest 50
+precipRange <- weatherDat %>% summarise_at(c("Niederschlag_summe"), list(min = min, max = max)) %>% mutate(min = floor(min/50) * 
+    50, max = ceiling(max/50) * 50) %>% unlist()
+# Get Average Values
+avgValues <- weatherDat %>% summarise_at(c("Temperatur_mw", "Niederschlag_summe"), mean) %>% unlist()
+ggplot(data = weatherDat, aes(y = Temperatur_mw, x = Niederschlag_summe, color = factor(typeYear), alpha = factor(typeYear))) + 
+    geom_segment(aes(y = avgValues[1], yend = avgValues[1], x = precipRange[1] * 1.1, xend = precipRange[2] * 
+        0.9), inherit.aes = FALSE, linetype = "dashed", alpha = 0.5, col = "black", data = data.frame()) + 
+    geom_segment(aes(y = tempRange[1] * ifelse(tempRange[1] > 0, 1.1, 0.9), yend = tempRange[2] * 0.9, 
+        x = avgValues[2], xend = avgValues[2]), inherit.aes = FALSE, linetype = "dashed", alpha = 0.5, 
+        col = "black", data = data.frame()) + geom_point(size = 1.5) + geom_rangeframe(col = "black", 
+    sides = "br") + theme_tufte(base_size = 15) + ylab("Durchschnittstemperatur (°C)") + xlab("Niederschlag (mm)") + 
+    scale_color_manual(values = c("blue", "black", "red"), breaks = c(0, 1), name = "Jahr", labels = c("1881-1999", 
+        paste0("2000-", jahr - 1))) + scale_y_continuous(limits = c(tempRange[1], tempRange[2]), position = "right") + 
+    scale_x_continuous(limits = precipRange) + theme(legend.position = c(0, 0), legend.justification = c(0, 
+    0), legend.title = element_text(size = 7, face = "bold", hjust = 0.5)) + annotate("text", y = tempRange[1] * 
+    ifelse(tempRange[1] > 0, 1.1, 0.9), x = avgValues[2] + 0.01 * avgValues[2], label = "Durchschnittswerte", 
+    size = 2, angle = 90) + scale_alpha_manual(values = c(0.4, 1, 1), guide = FALSE) + guides(colour = guide_legend(override.aes = list(alpha = c(0.4, 
+    0.9)))) + theme(text = element_text(size = 11, family = "sans-serif")) + theme(legend.text = element_text(size = 6))
 
-# Check if the high&low records were broken in the chosen
-mergedRecords <- merge(x = highLowPresent, y = recordHighLowPast, by = "yearDay", 
-    all.x = TRUE)
-brokenHigh <- mergedRecords[mergedRecords$high.x > mergedRecords$high.y, c("yearDay", 
-    "high.x")]
-brokenLow <- mergedRecords[mergedRecords$low.x < mergedRecords$low.y, c("yearDay", 
-    "low.x")]
-
-################################ Create the plot Create the min-max Year Day Temperatures
-
-# Plot the base layout
-dailyPlot <- ggplot(recordHighLowPast, aes(yearDay)) + theme(plot.background = element_blank(), 
-    panel.grid.minor = element_blank(), panel.grid.major = element_blank(), panel.border = element_blank(), 
-    panel.background = element_blank(), axis.ticks = element_blank(), axis.title = element_blank())
-# Plot the daily low/high temp records
-dailyPlot <- dailyPlot + geom_linerange(recordHighLowPast, mapping = aes(x = yearDay, 
-    ymin = low, ymax = high), colour = "wheat2", alpha = 0.9)
-
-# Plot the daily low/high temp confidence interval
-dailyPlot <- dailyPlot + geom_linerange(avgHighLowPast, mapping = aes(x = yearDay, 
-    ymin = low, ymax = high), colour = "wheat4", alpha = 0.7)
-# and as a line for better visibility
-dailyPlot <- dailyPlot + geom_line(data = avgHighLowPast, aes(x = yearDay, y = low), 
-    colour = "wheat4", alpha = 0.5)
-dailyPlot <- dailyPlot + geom_line(data = avgHighLowPast, aes(x = yearDay, y = high), 
-    colour = "wheat4", alpha = 0.5)
-
-# Draw the max-min from the chosen year
-dailyPlot <- dailyPlot + geom_linerange(highLowPresent, mapping = aes(x = yearDay, 
-    ymin = low, ymax = high), colour = "sienna4", alpha = 0.8, size = 1)
-# Plot the y-axis
-dailyPlot <- dailyPlot + geom_vline(xintercept = 0, colour = "wheat4", linetype = 1.5, 
-    size = 1)
-
-# Horizontal grid lines (for Temperature)
-dailyPlot <- dailyPlot + geom_hline(yintercept = -25, colour = "white", linetype = 1) + 
-    geom_hline(yintercept = -20, colour = "white", linetype = 1) + geom_hline(yintercept = -15, 
-    colour = "white", linetype = 1) + geom_hline(yintercept = -10, colour = "white", 
-    linetype = 1) + geom_hline(yintercept = -5, colour = "white", linetype = 1) + 
-    geom_hline(yintercept = 0, colour = "grey85", linetype = 2, alpha = 0.5) + geom_hline(yintercept = 5, 
-    colour = "white", linetype = 1) + geom_hline(yintercept = 10, colour = "white", 
-    linetype = 1) + geom_hline(yintercept = 15, colour = "white", linetype = 1) + 
-    geom_hline(yintercept = 20, colour = "white", linetype = 1) + geom_hline(yintercept = 25, 
-    colour = "white", linetype = 1) + geom_hline(yintercept = 30, colour = "white", 
-    linetype = 1) + geom_hline(yintercept = 35, colour = "white", linetype = 1)
-# plot the month seperator
-dailyPlot <- dailyPlot + geom_vline(xintercept = 31, colour = "wheat4", linetype = 3, 
-    size = 0.5) + geom_vline(xintercept = 59, colour = "wheat4", linetype = 3, size = 0.5) + 
-    geom_vline(xintercept = 90, colour = "wheat4", linetype = 3, size = 0.5) + geom_vline(xintercept = 120, 
-    colour = "wheat4", linetype = 3, size = 0.5) + geom_vline(xintercept = 151, colour = "wheat4", 
-    linetype = 3, size = 0.5) + geom_vline(xintercept = 181, colour = "wheat4", linetype = 3, 
-    size = 0.5) + geom_vline(xintercept = 212, colour = "wheat4", linetype = 3, size = 0.5) + 
-    geom_vline(xintercept = 243, colour = "wheat4", linetype = 3, size = 0.5) + geom_vline(xintercept = 273, 
-    colour = "wheat4", linetype = 3, size = 0.5) + geom_vline(xintercept = 304, colour = "wheat4", 
-    linetype = 3, size = 0.5) + geom_vline(xintercept = 334, colour = "wheat4", linetype = 3, 
-    size = 0.5) + geom_vline(xintercept = 365, colour = "wheat4", linetype = 3, size = 0.5)
-
-ylim.ticks <- seq(ylim.plot[1], ylim.plot[2], by = 10)
-a <- dgr_fmt(ylim.ticks)
-
-# Draw the x-axis month labels
-dailyPlot <- dailyPlot + coord_cartesian(ylim = ylim.plot) + scale_y_continuous(breaks = ylim.ticks, 
-    labels = a,expand = c(0, 0)) + scale_x_continuous(expand = c(0, 0), breaks = c(15, 45, 75, 105, 
-    135, 165, 195, 228, 258, 288, 320, 350), labels = c("Januar", "Februar", "März", 
-    "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", 
-    "Dezember"))
-
-# Draw the current broken high/low temp records
-dailyPlot <- dailyPlot + geom_point(data = brokenLow, aes(x = yearDay, y = low.x), 
-    colour = "dodgerblue1", shape = 21, fill = "dodgerblue1", size = 1.6) + geom_point(data = brokenHigh, 
-    aes(x = yearDay, y = high.x), colour = "firebrick1", shape = 21, fill = "firebrick1", 
-    size = 1.6)
-
-print(dailyPlot)

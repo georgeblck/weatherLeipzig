@@ -41,7 +41,7 @@ dfData <- dfData[order(dfData$Jahr, dfData$Monat), ]
 colnames(dfData) <- c("Jahr", "Monat", "Bundesland", "Temperatur", "Niederschlag", "Sonnendauer")
 
 # Daten abspeichern
-write.table(dfData, file = "regionalAverages.csv", dec = ".", sep = ";", row.names = FALSE)
+write.table(dfData, file = "data/regionalAverages.csv", dec = ".", sep = ";", row.names = FALSE)
 
 # Clean-Up
 rm(listData, allURL, getURLs, monthStrings, rrURL, sunURL, tmURL, varTypes)
