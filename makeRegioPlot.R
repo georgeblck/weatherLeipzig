@@ -1,4 +1,4 @@
-rm(list = ls())
+# rm(list = ls())
 
 # load packages
 library(lubridate)
@@ -24,12 +24,12 @@ tempRange <- bundeslandDat %>% summarise_at(c("Temperatur_mw"), list(min = min, 
 tempTicks <- tempRange[1]:tempRange[2]
 tempsegDat <- data.frame(x = rep(1881, length(tempTicks)), xend = rep(jahr + 0.5, length(tempTicks)), 
     y = tempTicks, yend = tempTicks)
-regioTemp <- ggplot(data = bundeslandDat, aes(x = Jahr, y = Temperatur_mw)) + geom_segment(data = tempsegDat, aes(x = x, 
-    y = y, xend = xend, yend = yend), inherit.aes = FALSE, linetype = "dashed", alpha = 0.3, col = "black") + 
-    geom_rangeframe(col = "black") + geom_line(alpha = 0.7, col = "red", size = 0.7) + geom_point(size = 1.5, 
-    alpha = 0.7, col = "red") + xlab("Jahr") + ylab("Durchschnittstemperatur (°C)") + theme_tufte(base_size = 11) + 
-    theme(legend.position = "none") + scale_x_continuous(breaks = c(1881, seq(1900, jahr, by = 20), jahr)) + 
-    scale_y_continuous(limits = c(tempRange[1], tempRange[2])) + theme(text = element_text(size = 11, 
+regioTemp <- ggplot(data = bundeslandDat, aes(x = Jahr, y = Temperatur_mw)) + geom_segment(data = tempsegDat, 
+    aes(x = x, y = y, xend = xend, yend = yend), inherit.aes = FALSE, linetype = "dashed", alpha = 0.3, 
+    col = "black") + geom_rangeframe(col = "black") + geom_line(alpha = 0.7, col = "red", size = 0.7) + 
+    geom_point(size = 1.5, alpha = 0.7, col = "red") + xlab("Jahr") + ylab("Durchschnittstemperatur (°C)") + 
+    theme_tufte(base_size = 11) + theme(legend.position = "none") + scale_x_continuous(breaks = c(1881, 
+    seq(1900, jahr, by = 20), jahr)) + scale_y_continuous(limits = c(tempRange[1], tempRange[2])) + theme(text = element_text(size = 11, 
     family = "sans-serif"))
 
 #### Plot Precip vs Temp ####
