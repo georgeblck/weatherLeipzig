@@ -1,5 +1,5 @@
 ---
-title: "README"
+title: "# Visualizing the Weather and Climate (Change) in Leipzig"
 output: github_document
 ---
 
@@ -8,9 +8,6 @@ library(Cairo)
 library(patchwork)
 save.plot <- FALSE
 ```
-
-
-# Visualizing the Weather and Climate (Change) in Leipzig
 
 ## First Plot: 2018 Temperatur per Day
 
