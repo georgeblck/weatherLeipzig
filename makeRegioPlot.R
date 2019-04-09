@@ -14,7 +14,7 @@ lastmonat <- ifelse((year(today()) - jahr) != 0, 12, month(today()) - 1)
 regionalAverages <- read.table("data/regionalAverages.csv", header = TRUE, dec = ".", sep = ";")
 # Daten filtern und aggregieren
 bundeslandDat <- regionalAverages %>% filter(Bundesland == bundesland, Jahr <= jahr) %>% filter(Monat <= 
-    lastmonat) %>% group_by(Jahr) %>% summarise_at(c("Temperatur", "Niederschlag"), list(mw = mean, summe = sum), 
+    lastmonat) %>% group_by(Jahr) %>% summarise_at(c("Temperatur", "Niederschlag", "Sonnendauer"), list(mw = mean, summe = sum), 
     na.rm = TRUE) %>% ungroup() %>% mutate(typeYear = (Jahr >= 2000) + (Jahr == jahr))
 
 
@@ -54,3 +54,14 @@ regioPrecip <- ggplot(data = bundeslandDat, aes(y = Temperatur_mw, x = Niedersch
     size = 2, angle = 90) + scale_alpha_manual(values = c(0.4, 1, 1), guide = FALSE) + guides(colour = guide_legend(override.aes = list(alpha = c(0.4, 
     0.9)))) + theme(text = element_text(size = 11, family = "sans-serif")) + theme(legend.text = element_text(size = 6))
 
+
+
+# Sun duration plot
+sunDat <- bundeslandDat %>% filter(Sonnendauer_summe>0) %>% 
+  mutate(numDays = ifelse(leap_year(Jahr), 366, 365)) %>%
+  mutate(sonneprotag = Sonnendauer_summe/numDays)
+ggplot(data = sunDat, aes(x = Jahr, y = sonneprotag)) + geom_rangeframe(col="black")+
+  geom_line(alpha = 0.7, col = "darkorange", size = 1) + xlab("Jahr") + ylab("Sonnenstunden pro Tag") + 
+  geom_point(size = 3, alpha = 0.7, col = "darkorange") + theme_tufte(base_size = 11) + 
+  theme(legend.position = "none") + scale_x_continuous(limits = c(1951, 2018), 
+                                                       breaks = c(1951, seq(1970, 2018, by = 20), 2018)) 
