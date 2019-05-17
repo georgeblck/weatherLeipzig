@@ -7,7 +7,7 @@ library(ggthemes)
 library(formatR)
 
 # Filter festlegen
-jahr <- 2018
+jahr <- 2019
 lastday <- ifelse((year(today()) - jahr) != 0, yday(ymd(paste0(jahr, "1231"))), yday(today()) - 5)
 beginjahr <- 1973
 

@@ -3,12 +3,15 @@ dgr_fmt <- function(x, ...) {
     parse(text = paste(x, "^o", sep = ""))
 }
 
+weatherData <- read.table("data/dailyData.csv", dec = ".", sep =";", header = TRUE)
+since.year <- 1973
+what.year <- 2019
 # Subset the Temp-Data by Year (1973) & by Variable
 subWeather <- weatherData[weatherData$Year >= since.year, c("Month", "Day", "Year", "YDay", "AVGTemp", 
     "MaxTemp2m", "MinTemp2m", "SonnenscheinStunden", "NiederschlagMM")]
 colnames(subWeather) <- c("Month", "Day", "Year", "yearDay", "Temp", "MaxTemp", "MinTemp", "SunHours", 
     "PrecipinMM")
-
+library(ggplot2)
 # Get y-Axis Limits
 ylim.plot <- c(floor(min(subWeather$MinTemp)/5) * 5, ceiling(max(subWeather$MaxTemp)/5) * 5)
 
@@ -109,3 +112,21 @@ dailyPlot <- dailyPlot + geom_point(data = brokenLow, aes(x = yearDay, y = low.x
     colour = "firebrick1", shape = 21, fill = "firebrick1", size = 1.6)
 
 print(dailyPlot)
+
+
+#### Precip Cumsum plot ####
+
+library(tidyverse)
+library(ggthemes)
+what.year <- 2019
+cumWeather <- weatherData %>% filter(Year >= since.year, Year < what.year) %>% group_by(Year) %>% arrange(YDay) %>%
+  mutate(cumPrecip = cumsum(NiederschlagMM), cumSun = cumsum(SonnenscheinStunden)) %>% 
+  ungroup() %>% group_by(YDay) %>% summarise_at(c("cumPrecip", "cumSun"), mean, na.rm = TRUE) 
+cumWeather <- weatherData %>% filter(Year == what.year) %>% full_join(cumWeather, by = "YDay") %>% 
+  arrange(YDay) %>% mutate(cumPrecipYear = cumsum(NiederschlagMM), cumSunYear = cumsum(SonnenscheinStunden)) %>%
+  mutate(precipDiff = cumPrecipYear-cumPrecip, sunDiff = cumSunYear - cumSun)
+cumWeather %>%
+  ggplot(aes(x=YDay, y = precipDiff)) +theme_tufte()+geom_hline(yintercept = 0)+xlab("Jahrestag")+ylab("Abweichung im Niederschlag")+geom_line()
+
+cumWeather %>% 
+  ggplot(aes(x=YDay, y = sunDiff)) +theme_tufte()+geom_hline(yintercept = 0)+xlab("Jahrestag")+ylab("Abweichung im Niederschlag")+geom_line()
