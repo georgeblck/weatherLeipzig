@@ -118,15 +118,16 @@ print(dailyPlot)
 
 library(tidyverse)
 library(ggthemes)
-what.year <- 2019
+
 cumWeather <- weatherData %>% filter(Year >= since.year, Year < what.year) %>% group_by(Year) %>% arrange(YDay) %>%
   mutate(cumPrecip = cumsum(NiederschlagMM), cumSun = cumsum(SonnenscheinStunden)) %>% 
-  ungroup() %>% group_by(YDay) %>% summarise_at(c("cumPrecip", "cumSun"), mean, na.rm = TRUE) 
+  ungroup() %>% group_by(YDay) %>% summarise_at(c("cumPrecip", "cumSun", "NiederschlagMM"), list(mean = mean, max = max), na.rm = TRUE) 
 cumWeather <- weatherData %>% filter(Year == what.year) %>% full_join(cumWeather, by = "YDay") %>% 
   arrange(YDay) %>% mutate(cumPrecipYear = cumsum(NiederschlagMM), cumSunYear = cumsum(SonnenscheinStunden)) %>%
-  mutate(precipDiff = cumPrecipYear-cumPrecip, sunDiff = cumSunYear - cumSun)
-cumWeather %>%
-  ggplot(aes(x=YDay, y = precipDiff)) +theme_tufte()+geom_hline(yintercept = 0)+xlab("Jahrestag")+ylab("Abweichung im Niederschlag")+geom_line()
+  mutate(precipDiff = cumPrecipYear-cumPrecip_mean, sunDiff = cumSunYear - cumSun_mean, precipMax = NiederschlagMM > NiederschlagMM_max)
+ggplot(cumWeather, aes(x=YDay, y = precipDiff/20)) +theme_tufte()+geom_hline(yintercept = 0)+
+  xlab("Jahrestag")+ylab("Abweichung im Niederschlag")+geom_line()+geom_point(data = cumWeather[cumWeather$precipMax==TRUE,],
+                                                                              colour = "blue")
 
 cumWeather %>% 
   ggplot(aes(x=YDay, y = sunDiff)) +theme_tufte()+geom_hline(yintercept = 0)+xlab("Jahrestag")+ylab("Abweichung im Niederschlag")+geom_line()

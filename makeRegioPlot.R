@@ -6,7 +6,7 @@ library(tidyverse)
 library(ggthemes)
 
 # Filter festlegen
-jahr <- 2018
+jahr <- 2019
 bundesland <- "Sachsen"
 lastmonat <- ifelse((year(today()) - jahr) != 0, 12, month(today()) - 1)
 
