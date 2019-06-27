@@ -20,14 +20,12 @@ what.station <- "Leipzig/Halle"
 save.plot <- TRUE
 
 ###################################################### Read the data Read the last (local) data
-weatherData <- read.table("weatherLeipzig.csv", dec = ".", sep = ";", header = TRUE, 
-    stringsAsFactors = FALSE)
+weatherData <- read.table("weatherLeipzig.csv", dec = ".", sep = ";", header = TRUE, stringsAsFactors = FALSE)
 # Format the Date
 weatherData$Date <- ymd(weatherData$Date)
 
 ######################################### Get new data if the local one is outdated How outdated is the data
-days.outdated <- as.numeric((date(now()) - 1) - date(weatherData[nrow(weatherData), 
-    "Date"]))
+days.outdated <- as.numeric((date(now()) - 1) - date(weatherData[nrow(weatherData), "Date"]))
 print(days.outdated)
 # If it is outdated --> get the recent data
 if (abs(days.outdated) > 1) {
@@ -42,18 +40,15 @@ if (abs(days.outdated) > 1) {
     oldWeather <- dataDWD(oldLink, dir = "DWDdata")
     
     # Combine historic and recent data, but remove the overlap
-    startRecent <- which(recentWeather$MESS_DATUM == oldWeather$MESS_DATUM[nrow(oldWeather)]) + 
-        1
-    weatherData <- rbind(oldWeather, recentWeather[startRecent:nrow(recentWeather), 
-        ])
+    startRecent <- which(recentWeather$MESS_DATUM == oldWeather$MESS_DATUM[nrow(oldWeather)]) + 1
+    weatherData <- rbind(oldWeather, recentWeather[startRecent:nrow(recentWeather), ])
     # Delete empty columns
     weatherData$STATIONS_ID <- NULL
     weatherData$eor <- NULL
     # Rename the variables
-    colnames(weatherData) <- c("Date", "QN3", "AVGWindtempo", "MaxWindtempo", "QN4", 
-        "NiederschlagMM", "NiederschlagsForm", "SonnenscheinStunden", "Schneehoehe", 
-        "NM", "AVGDampfDruck", "AVGLuftdruck", "AVGTemp", "AVGFeuchte", "MaxTemp2m", 
-        "MinTemp2m", "MinTemp5cm")
+    colnames(weatherData) <- c("Date", "QN3", "AVGWindtempo", "MaxWindtempo", "QN4", "NiederschlagMM", 
+        "NiederschlagsForm", "SonnenscheinStunden", "Schneehoehe", "NM", "AVGDampfDruck", "AVGLuftdruck", 
+        "AVGTemp", "AVGFeuchte", "MaxTemp2m", "MinTemp2m", "MinTemp5cm")
     # Create the date variables
     weatherData$Month <- month(weatherData$Date)
     weatherData$Day <- mday(weatherData$Date)
@@ -63,8 +58,8 @@ if (abs(days.outdated) > 1) {
     write.table(weatherData, file = "weatherLeipzig.csv", dec = ".", sep = ";", row.names = FALSE)
 }
 
-regioAll <- read.table("https://raw.githubusercontent.com/georgeblck/weatherLeipzig/master/saxonyClimate.csv",
-                       header = TRUE, dec =".", sep =";")
+regioAll <- read.table("https://raw.githubusercontent.com/georgeblck/weatherLeipzig/master/saxonyClimate.csv", 
+    header = TRUE, dec = ".", sep = ";")
 
 # Make Plots
 source("makeDailyPlot.R")
@@ -82,10 +77,8 @@ print(bigPlot)
 # Save Plot
 if (save.plot) {
     # Save it cairo pdf
-    ggsave(bigPlot, filename = paste0("plots/538_", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), 
-        ".pdf"), device = cairo_pdf, width = 270, height = 125, units = "mm", scale = 1.7, 
-        limitsize = FALSE)
+    ggsave(bigPlot, filename = paste0("plots/538_", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), ".pdf"), 
+        device = cairo_pdf, width = 270, height = 125, units = "mm", scale = 1.7, limitsize = FALSE)
     ggsave(dailyPlot, filename = paste0("plots/daily_", gsub("[^[:alnum:]=\\.]", "", lubridate::now()), 
-        ".png"), width = 270, height = 135, units = "mm", scale = 1.7, 
-        limitsize = FALSE)
+        ".png"), width = 270, height = 135, units = "mm", scale = 1.7, limitsize = FALSE)
 }
