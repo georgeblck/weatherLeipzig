@@ -8,9 +8,9 @@ library(stringr)
 #### Load data ####
 
 # Get the URLs of the Regional Monthly Averages
-tmURL <- "ftp://ftp-cdc.dwd.de/pub/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_"
-rrURL <- "ftp://ftp-cdc.dwd.de/pub/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_"
-sunURL <- "ftp://ftp-cdc.dwd.de/pub/CDC/regional_averages_DE/monthly/sunshine_duration/regional_averages_sd_"
+tmURL <- "https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/air_temperature_mean/regional_averages_tm_"
+rrURL <- "https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/precipitation/regional_averages_rr_"
+sunURL <- "https://opendata.dwd.de/climate_environment/CDC/regional_averages_DE/monthly/sunshine_duration/regional_averages_sd_"
 allURL <- c(tmURL, rrURL, sunURL)
 # Append the month numbers to ftp-URLs
 monthStrings <- str_pad(1:12, 2, pad = "0")

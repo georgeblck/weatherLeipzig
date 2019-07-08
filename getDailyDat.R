@@ -6,7 +6,7 @@ library(lubridate)
 
 # Get Old Weather
 temp <- tempfile()
-download.file("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/tageswerte_KL_02932_19340101_20181231_hist.zip", 
+download.file("https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/kl/historical/tageswerte_KL_02932_19340101_20181231_hist.zip", 
     temp)
 oldWeather <- read.csv(unz(temp, "produkt_klima_tag_19340101_20181231_02932.txt"), sep = ";", dec = ".", 
     na.strings = c("NA", -999), header = TRUE)
@@ -14,7 +14,7 @@ unlink(temp)
 
 # Get new weather
 temp <- tempfile()
-download.file("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/tageswerte_KL_02932_akt.zip", 
+download.file("https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/kl/recent/tageswerte_KL_02932_akt.zip", 
     temp)
 fileNames <- unzip(temp, list = TRUE)$Name
 newWeather <- read.csv(unz(temp, grep("^produkt", fileNames, value = TRUE)), sep = ";", dec = ".", na.strings = c("NA", 
