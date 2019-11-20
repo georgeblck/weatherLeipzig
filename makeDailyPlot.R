@@ -57,3 +57,4 @@ dailyPrecip <- ggplot(data = weatherDat, aes(y = Temperatur_mw, x = Niederschlag
     size = 2, angle = 90) + scale_alpha_manual(values = c(0.4, 1, 1), guide = FALSE) + guides(colour = guide_legend(override.aes = list(alpha = c(0.4, 
     0.9)))) + theme(text = element_text(size = 11, family = "sans-serif")) + theme(legend.text = element_text(size = 6))
 
+print(dailyPrecip)
