@@ -8,6 +8,8 @@ library(tidyverse)
 library(lubridate)
 library(gmodels)
 library(ggpomological)
+library(ggthemes)
+
 
 lubStations <- nearbyStations(53.9163, 10.6854, radius = 40, var = "kl", res = "daily")
 
